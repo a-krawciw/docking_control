@@ -1,0 +1,31 @@
+<launch>
+
+    <arg name="marker_size"          default="4.5" />
+    <arg name="max_new_marker_error" default="0.05" />
+    <arg name="max_track_error"      default="0.05" />
+
+    <arg name="cam_image_topic"      default="/csi_cam_0/image_raw" />
+    <arg name="cam_info_topic"       default="/csi_cam_0/camera_info" />
+    <arg name="output_frame"         default="/map" />
+
+    <include file="$(find jetson_csi_cam)/jetson_csi_cam.launch" pass_all_args="true" />
+    
+    
+  <param name="robot_description" command="$(find xacro)/xacro $(find docking_control)/urdf/boat.urdf"/>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+	
+    <node name="tf_publisher" type="static_transform_publisher" pkg="tf2_ros" args="0 0 0 0 0 0 1 /map csi_cam_0_link">
+    
+    </node>
+
+    <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
+		<param name="marker_size"           type="double" value="$(arg marker_size)" />
+		<param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />
+		<param name="max_track_error"       type="double" value="$(arg max_track_error)" />
+		<param name="output_frame"          type="string" value="$(arg output_frame)" />
+
+		<remap from="camera_image"  to="$(arg cam_image_topic)" />
+		<remap from="camera_info"   to="$(arg cam_info_topic)" />
+	</node>
+</launch>
