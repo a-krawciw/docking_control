@@ -4,14 +4,21 @@ import math
 import rospy
 from geometry_msgs.msg import Twist
 from visualization_msgs.msg import Marker
-from mavros_msgs.msg import OverrideRCIn
+from mavros_msgs.msg import OverrideRCIn, RCIn
 
 
 
-target_dist = 0.5
+target_dist = 1
+ros_mode = True
+
+def rc_callback(msg):
+    if msg.channels[6] < 1200:
+        global ros_mode
+        ros_mode = False
 
 def main():
     rc_pub = rospy.Publisher("mavros/rc/override", OverrideRCIn, queue_size=10)
+    rc_sub = rospy.Subscriber("mavros/rc/in", RCIn, rc_callback)
     rospy.init_node('position_hold')
 
     def ar_callback(msg):
@@ -19,7 +26,7 @@ def main():
             position = msg.pose.position
             rc = OverrideRCIn()
             pos_error = position.z - target_dist
-            rc.channels[1] = 1500 + 450 * pos_error
+            rc.channels[1] = 1500 + 500 * pos_error
             #rc.channels[1] = 1450
             angle = math.atan2(position.x, position.z)
             if rc.channels[1] < 1500:
@@ -33,7 +40,8 @@ def main():
 
     rospy.Subscriber("visualization_marker", Marker, ar_callback)
 
-    rospy.spin()
+    while not rospy.is_shutdown() and ros_mode:
+        rospy.spin()
 
 
 if __name__ == '__main__':
