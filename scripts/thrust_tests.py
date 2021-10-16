@@ -1,11 +1,20 @@
 #!/usr/bin/env python
+import time
+from sys import stdin
 
 import rospy
 from mavros_msgs.msg import OverrideRCIn
+from geometry_msgs.msg import TwistStamped
+
+def print_vel(m):
+    twist = m.twist
+    rospy.loginfo("vx:{}m/s vy{}m/s r{}rad/s".format(twist.linear.x, twist.linear.y, twist.angular.z))
 
 def main():
-    rc_pub = rospy.Publisher("mavros/rc/override", OverrideRCIn, queue_size=10)
     rospy.init_node("override_testing")
+    rc_pub = rospy.Publisher("mavros/rc/override", OverrideRCIn, queue_size=10)
+    pose_sub = rospy.Subscriber("mavros/local_position/velocity_body", TwistStamped, print_vel)
+
 
     rc_left = 1500
     rc_right = 1500
@@ -24,13 +33,18 @@ def main():
     rc_msg.channels[1] = rc_left
     rc_msg.channels[0] = rc_right
     rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
+    for i in range(200):
         rc_pub.publish(rc_msg)
         rate.sleep()
+
     rc_msg = OverrideRCIn()
     rc_msg.channels[0] = 1500
     rc_msg.channels[1] = 1500
     rc_pub.publish(rc_msg)
+
+    time.sleep(5)
+
+
 
 if  __name__ == '__main__':
     try:

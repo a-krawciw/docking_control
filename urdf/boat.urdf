@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
 <!-- Kinematic model, simplified visual, no collisions -->
-<robot name="csi_cam_0" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="boat" xmlns:xacro="http://www.ros.org/wiki/xacro">
 	<link name="base_link"/>
-	<link name="optical_frame"/>
+	<link name="csi_cam_0_link"/>
 	<joint name="optical_frame_to_base" type="fixed">
+	 	<origin xyz="0 0 0" rpy="0 1.57079 0"/>
 		<parent link="base_link"/>
-		<child link="optical_frame"/>
+		<child link="csi_cam_0_link"/>
+	</joint>
+	<link name="cg_ned" />
+	<joint name="pixhawk_transform" type="fixed">
+		<origin xyz="0.15 0 0" rpy="3.14159 0 -1.57079" />
+		<child link="cg_ned" />
+		<parent link="base_link" />
 	</joint>
 </robot>
 
