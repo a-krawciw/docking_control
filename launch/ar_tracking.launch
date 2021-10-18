@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="marker_size"          default="4.5" />
+    <arg name="marker_size"          default="5.8" />
     <arg name="max_new_marker_error" default="0.05" />
     <arg name="max_track_error"      default="0.05" />
 
@@ -14,10 +14,7 @@
   <param name="robot_description" command="$(find xacro)/xacro $(find docking_control)/urdf/boat.urdf"/>
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
-	
-    <node name="tf_publisher" type="static_transform_publisher" pkg="tf2_ros" args="0 0 0 0 0 0 1 /map csi_cam_0_link">
-    
-    </node>
+
 
     <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
 		<param name="marker_size"           type="double" value="$(arg marker_size)" />

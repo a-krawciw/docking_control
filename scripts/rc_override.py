@@ -21,8 +21,8 @@ def main():
     else:
         rospy.logwarn("No param rc_right")
     rc_msg = OverrideRCIn()
-    rc_msg.channels[1] = rc_left
-    rc_msg.channels[0] = rc_right
+    rc_msg.channels[0] = rc_left
+    rc_msg.channels[1] = rc_right
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         rc_pub.publish(rc_msg)
