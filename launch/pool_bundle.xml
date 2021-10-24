@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<!--
+Markers start in lower left corner and go counter clockwise.
+Units in cm
+-->
+
+<multimarker markers="3">
+    <marker index="1" status="2">
+        <corner x="-3.8" y="-3.8" z="0.0" />
+        <corner x="3.8" y="-3.8" z="0.0" />
+        <corner x="3.8" y="3.8" z="0.0" />
+        <corner x="-3.8" y="3.8" z="0.0" />
+    </marker>
+
+    <marker index="2" status="2">
+        <corner x="46.2" y="-3.8" z="0.0" />
+        <corner x="53.8" y="-3.8" z="0.0" />
+        <corner x="53.8" y="3.8" z="0.0" />
+        <corner x="46.2" y="3.8" z="0.0" />
+    </marker>
+
+    <marker index="4" status="2">
+        <corner x="-53.8" y="-3.8" z="0.0" />
+        <corner x="-46.2" y="-3.8" z="0.0" />
+        <corner x="-46.2" y="3.8" z="0.0" />
+        <corner x="-53.8" y="3.8" z="0.0" />
+    </marker>
+</multimarker>

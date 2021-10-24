@@ -16,9 +16,6 @@ def rc_callback(msg):
         ros_mode = False
 
 
-def print_msg(msg):
-    rospy.loginfo(msg)
-
 
 class RouteFinder:
 
@@ -27,6 +24,7 @@ class RouteFinder:
         self.tag_pose_sub = rospy.Subscriber("ar_pose_marker", AlvarMarkers, self.handle_new_marker)
         self.tag_pub = rospy.Publisher("ar_tag_0", PoseStamped, queue_size=10)
         self.target = PoseStamped()
+        self.error = PoseStamped()
         self.target.header.frame_id = 'map'
         self.current_position = Pose()
         self._most_recent_time = rospy.Time.now() - rospy.Duration(11)
@@ -38,7 +36,7 @@ class RouteFinder:
 
     def handle_new_marker(self, msg):
         for marker in msg.markers:
-            if marker.id == 0:
+            if marker.id == 1:
                 self.target = marker.pose
                 self.target.header = marker.header
                 self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
@@ -53,15 +51,17 @@ class RouteFinder:
         self.current_position = msg.pose
         if self._should_process():
             try:
+                self.target.header.stamp = rospy.Time.now() - rospy.Duration(1)
                 self.error = self.tfBuffer.transform(self.target, 'cg_ned')
             except:
                 rospy.loginfo("Time out or disconnected tree")
 
     def calc_steering_throttle(self):
         if self._should_process():
-            position = self.target.pose.position
-            throttle = 1500 + 450 * position.x
-            angle = math.atan2(position.y, position.x)
+            position = self.error.pose.position
+            throttle = 1500 + 450 * (position.x-1)
+            angle = -math.atan2(position.z, position.x)
+            rospy.loginfo("x:{} y{}".format(position.x, position.z))
             if throttle < 1500:
                 steering = 1500 + int(1000 * angle)
             else:
