@@ -1,12 +1,12 @@
 <launch>
 
-    <arg name="marker_size"          default="7.6" />
+    <arg name="marker_size"          default="7.5" />
     <arg name="max_new_marker_error" default="0.05" />
     <arg name="max_track_error"      default="0.05" />
 
     <arg name="cam_image_topic"      default="/csi_cam_0/image_raw" />
     <arg name="cam_info_topic"       default="/csi_cam_0/camera_info" />
-    <arg name="output_frame"         default="map" />
+    <arg name="output_frame"         default="cg_ned" />
     <arg name="bundle_files"        default="$(find docking_control)/launch/pool_bundle.xml" />
 
     <param name = "fps"      type="double"    value="15" />
@@ -14,8 +14,8 @@
 
 
   <param name="robot_description" command="$(find xacro)/xacro $(find docking_control)/urdf/boat.urdf"/>
-
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+<node pkg="tf2_ros" type="static_transform_publisher" name="dock_broadcaster" args="0 0 0 0 -1.5708 -1.5708 ar_marker_3 dock_frame" />
 
   <node name="ar_track_alvar" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg bundle_files)" />

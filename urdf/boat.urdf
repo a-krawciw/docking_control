@@ -1,18 +1,35 @@
 <?xml version="1.0"?>
-<!-- Kinematic model, simplified visual, no collisions -->
-<robot name="boat" xmlns:xacro="http://www.ros.org/wiki/xacro">
-	<link name="base_link"/>
-	<link name="csi_cam_0_link"/>
-	
-	<link name="cg_ned" />
-	<joint name="pixhawk_transform" type="fixed">
-		<origin xyz="-0.15 0 0" rpy="3.14159 0 0" />
-		<child link="cg_ned" />
-		<parent link="base_link" />
-	</joint>
-	<joint name="optical_frame_to_base" type="fixed">
-	 	<origin xyz="0 0 -0.08" rpy="0 1.5708 0"/>
-		<parent link="cg_ned"/>
-		<child link="csi_cam_0_link"/>
-	</joint>
+<!-- Kinematic model, simplified visual, no collisions 1.5708-->
+
+<robot name="boat">
+    <material name="black">
+        <color rgba="0.9 0.9 0.9 1"/>
+    </material>
+
+    <link name="base_link">
+
+    </link>
+    <link name="csi_cam_0_link"/>
+
+    <link name="cg_ned">
+        <visual>
+            <origin xyz="-0.18 0.14 0.09" rpy="-1.57079 0 -1.57079"/>
+            <geometry>
+                <mesh filename="file:///home/alec/PycharmProjects/boat_ws/src/docking_control/urdf/Boat.stl"
+                      scale="0.001 0.001 0.001"/>
+
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+    <joint name="pixhawk_transform" type="fixed">
+        <origin xyz="-0.15 0 0" rpy="3.14159 0 0"/>
+        <child link="cg_ned"/>
+        <parent link="base_link"/>
+    </joint>
+    <joint name="optical_frame_to_base" type="fixed">
+        <origin xyz="-0.03 0 -0.09" rpy="1.5708 0 1.5708"/>
+        <parent link="cg_ned"/>
+        <child link="csi_cam_0_link"/>
+    </joint>
 </robot>
