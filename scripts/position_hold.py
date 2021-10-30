@@ -37,7 +37,7 @@ class RouteFinder:
 
     def handle_new_marker(self, msg):
         for marker in msg.markers:
-            if marker.id == 3:
+            if marker.id == 5:
                 self.target = marker.pose
                 self.target.header = marker.header
                 self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
@@ -45,6 +45,7 @@ class RouteFinder:
                 self._most_recent_time = rospy.Time.now()
 
                 current = PoseStamped()
+                current.pose.orientation.z = 1
                 current.header.frame_id = 'cg_ned'
                 try:
                     self.error = self.tfBuffer.transform(current, 'dock_frame')
@@ -58,16 +59,17 @@ class RouteFinder:
         self.current_position = msg.pose
 
     def extract_yaw(self, q):
-        return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[1]
+
+        return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[2]
 
     def calc_steering_throttle(self):
         if self._should_process():
             position = self.error.pose.position
-            throttle = 1500 + 450 * (position.x-1)
-            target_angle = math.atan2(5*position.y, position.x)
+            throttle = 1500 + 200 * (position.x-0.5)
+            target_angle = -math.pi / 4 / 0.4 * position.y
             angle = self.extract_yaw(self.error.pose.orientation)
             angle_err = -target_angle + angle
-            rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, self.error.pose.orientation))
+            rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, angle))
             if throttle < 1500:
                 steering = 1500 + int(500 * angle_err)
             else:
