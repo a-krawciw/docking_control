@@ -29,6 +29,7 @@ class RouteFinder:
         self.target.header.frame_id = 'map'
         self.current_position = Pose()
         self._most_recent_time = rospy.Time.now() - rospy.Duration(11)
+        self.stage = 0
         if tf2_buffer is None:
             self.tfBuffer = tf2_ros.Buffer()
             self.listener = tf2_ros.TransformListener(self.tfBuffer)
@@ -53,7 +54,7 @@ class RouteFinder:
                     rospy.loginfo("Time out or disconnected tree")
 
     def _should_process(self):
-        return rospy.Time.now() - self._most_recent_time < rospy.Duration(10)
+        return rospy.Time.now() - self._most_recent_time < rospy.Duration(2)
 
     def handle_boat_pos(self, msg):
         self.current_position = msg.pose
@@ -65,15 +66,27 @@ class RouteFinder:
     def calc_steering_throttle(self):
         if self._should_process():
             position = self.error.pose.position
-            throttle = 1500 + 200 * (position.x-0.5)
-            target_angle = -math.pi / 4 / 0.4 * position.y
+
+            target_angle = 0
+            throttle = 1500
+            if position.x < 0 and abs(position.y) < 0.1:
+                rospy.loginfo("Docked")
+                stage = 2
+                #return 1500, 1750
+            if position.x < 0.3 and abs(position.y) < 0.25:
+                target_angle = math.atan2(position.y, (position.x+0.25))
+                throttle = 1500 + 400 * (position.x + 0.5)
+            else:
+                target_angle = math.atan2(position.y, (position.x - 0.3))
+                throttle = 1500 + 400 * (position.x)
+
             angle = self.extract_yaw(self.error.pose.orientation)
             angle_err = -target_angle + angle
             rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, angle))
             if throttle < 1500:
-                steering = 1500 + int(500 * angle_err)
+                steering = 1500 + int(750 * angle_err)
             else:
-                steering = 1500 - int(500 * angle_err)
+                steering = 1500 - int(750 * angle_err)
             return steering, throttle
 
         else:
