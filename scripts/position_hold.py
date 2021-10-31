@@ -38,7 +38,7 @@ class RouteFinder:
 
     def handle_new_marker(self, msg):
         for marker in msg.markers:
-            if marker.id == 5:
+            if marker.id == 2:
                 self.target = marker.pose
                 self.target.header = marker.header
                 self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
@@ -72,13 +72,9 @@ class RouteFinder:
             if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
                 stage = 2
-                #return 1500, 1750
-            if position.x < 0.3 and abs(position.y) < 0.25:
-                target_angle = math.atan2(position.y, (position.x+0.25))
-                throttle = 1500 + 250 * (position.x + 0.5)
-            else:
-                target_angle = math.atan2(position.y, (position.x - 0.3))
-                throttle = 1500 + 250 * (position.x)
+                return 1500, 1750
+            target_angle = math.atan2(3*position.y, position.x)
+            throttle = 1500 + 250 * math.sqrt(position.x**2 + position.y**2)
 
             angle = self.extract_yaw(self.error.pose.orientation)
             angle_err = -target_angle + angle
