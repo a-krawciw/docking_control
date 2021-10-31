@@ -54,7 +54,7 @@ class RouteFinder:
                     rospy.loginfo("Time out or disconnected tree")
 
     def _should_process(self):
-        return rospy.Time.now() - self._most_recent_time < rospy.Duration(2)
+        return rospy.Time.now() - self._most_recent_time < rospy.Duration(1)
 
     def handle_boat_pos(self, msg):
         self.current_position = msg.pose
@@ -69,28 +69,28 @@ class RouteFinder:
 
             target_angle = 0
             throttle = 1500
-            if position.x < 0 and abs(position.y) < 0.1:
+            if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
                 stage = 2
                 #return 1500, 1750
             if position.x < 0.3 and abs(position.y) < 0.25:
                 target_angle = math.atan2(position.y, (position.x+0.25))
-                throttle = 1500 + 400 * (position.x + 0.5)
+                throttle = 1500 + 250 * (position.x + 0.5)
             else:
                 target_angle = math.atan2(position.y, (position.x - 0.3))
-                throttle = 1500 + 400 * (position.x)
+                throttle = 1500 + 250 * (position.x)
 
             angle = self.extract_yaw(self.error.pose.orientation)
             angle_err = -target_angle + angle
             rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, angle))
             if throttle < 1500:
-                steering = 1500 + int(750 * angle_err)
+                steering = 1500 + int(350 * angle_err)
             else:
-                steering = 1500 - int(750 * angle_err)
+                steering = 1500 - int(350 * angle_err)
             return steering, throttle
 
         else:
-            return 1500, 1500
+            return 1600, 1500
 
 
 def main():
