@@ -110,7 +110,12 @@ class GradientPath(PathGenerator, PublisherClass):
 
 def main():
     rospy.init_node('path_generator')
+    newGen = None
     generator = GradientPath("/path")
+    def swap_generator(msg):
+        generator.generate_path_now(msg, PoseStamped())
+    sub = rospy.Subscriber("path_request", PoseStamped, swap_generator)
+
     generator.a = 8
     current = PoseStamped()
     current.pose.position.x = 2.0
