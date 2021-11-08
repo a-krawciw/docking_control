@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+import numpy as np
 
 import rospy
 import tf.transformations
@@ -11,6 +12,8 @@ from geometry_msgs.msg import PoseStamped, Pose
 from ar_track_alvar_msgs.msg import AlvarMarkers
 
 from mavros_utils import RCManager
+
+import contoller_utils as utils
 
 
 def rc_callback(msg):
@@ -45,22 +48,21 @@ class RouteFinder:
     def handle_new_marker(self, msg):
 
         for marker in msg.markers:
-            if marker.id == 2:
-                self.target = marker.pose
-                self.target.header = marker.header
-                self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
-                self.tag_pub.publish(marker.pose)
+            self.target = marker.pose
+            self.target.header = marker.header
+            self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
+            self.tag_pub.publish(marker.pose)
 
-                current = PoseStamped()
-                current.pose.orientation.z = 1
-                current.header.frame_id = 'cg_ned'
-                try:
-                    self.error = self.tfBuffer.transform(current, 'dock_frame')
-                    if not self._should_process():
-                        self.path_pub.publish(self.error)
-                    self._most_recent_time = rospy.Time.now()
-                except:
-                    rospy.loginfo("Time out or disconnected tree")
+            current = PoseStamped()
+            current.pose.orientation.z = 1
+            current.header.frame_id = 'cg_ned'
+            try:
+                self.error = self.tfBuffer.transform(current, 'dock_frame')
+                if not self._should_process():
+                    self.path_pub.publish(self.error)
+                self._most_recent_time = rospy.Time.now()
+            except:
+                rospy.loginfo("Time out or disconnected tree")
 
     def _should_process(self):
         return rospy.Time.now() - self._most_recent_time < rospy.Duration(1)
@@ -71,36 +73,33 @@ class RouteFinder:
     def set_path(self, p):
         self.path = p
 
-    def get_current_target(self):
-        for waypoint in self.path.poses:
-            yield waypoint
-
-    def extract_yaw(self, q):
-        return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[2]
-
-
     def calc_steering_throttle(self):
         if False and self._should_process():
 
             position = self.error.pose.position
-            target_angle = self.extract_yaw(self.target_state.pose.orientation)
-            throttle = 1500
+            (dist, idx) = utils.min_dist(self.path, self.error)
+            target_angle = utils.extract_yaw(self.target_state.pose.orientation)
+            path_pos = self.path.poses[idx]
+            current_theta = utils.extract_yaw(self.error.pose.orientation)
+
+            look_ahead_point = np.array(path_pos[0:1] + 0.05*np.array([np.cos(target_angle),np.sin(target_angle)]))
+
+            restoring_angle = np.arctan2(look_ahead_point[1]-position.y, look_ahead_point[0]-position.x)
+
+            angle_err = utils.theta_diff(current_theta, path_pos[2]) + 5*utils.theta_diff(current_theta, restoring_angle)
+
+            T = 3*angle_err/np.pi*0.75*0.165
+            F = 0.75/(1-dist)*0.75
+
             if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
-                stage = 2
-                # return 1500, 1750
-            throttle = 1500 + 50 * (position.x)
-
-            angle = self.extract_yaw(self.error.pose.orientation)
-            angle_err = -target_angle + angle
-
-            if abs(angle_err) < 0.2:
-                self.target_state = self.get_current_target()
-            rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, angle))
+                return 1500, 1750
+            throttle = 1500 + 400/1.5*F
+            rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, current_theta))
             if throttle < 1500:
-                steering = 1500 + int(350 * angle_err)
+                steering = 1500 + int(350 * T)
             else:
-                steering = 1500 - int(350 * angle_err)
+                steering = 1500 - int(350 * T)
             return steering, throttle
 
         else:

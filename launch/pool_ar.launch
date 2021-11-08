@@ -7,7 +7,7 @@
     <arg name="cam_image_topic"      default="/csi_cam_0/image_raw" />
     <arg name="cam_info_topic"       default="/csi_cam_0/camera_info" />
     <arg name="output_frame"         default="cg_ned" />
-    <arg name="bundle_files"        default="$(find docking_control)/launch/dock_bundle.xml" />
+    <arg name="bundle_files"        default="$(find docking_control)/launch/pool_bundle.xml" />
 
     <param name = "fps"      type="double"    value="15" />
     <include file="$(find jetson_csi_cam)/jetson_csi_cam.launch" pass_all_args="true" />
