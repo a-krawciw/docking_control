@@ -11,6 +11,8 @@
     </link>
     <link name="csi_cam_0_link"/>
 
+    <link name="imu" />
+
     <link name="cg_ned">
         <visual>
             <origin xyz="-0.18 0.14 0.09" rpy="-1.57079 0 -1.57079"/>
@@ -32,4 +34,10 @@
         <parent link="cg_ned"/>
         <child link="csi_cam_0_link"/>
     </joint>
+    <joint name="imu_to_base" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="cg_ned" />
+        <child link="imu" />
+    </joint>
+
 </robot>

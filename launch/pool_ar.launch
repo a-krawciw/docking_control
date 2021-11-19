@@ -9,16 +9,15 @@
     <arg name="output_frame"         default="cg_ned" />
     <arg name="bundle_files"        default="$(find docking_control)/launch/pool_bundle.xml" />
 
-    <param name = "fps"      type="double"    value="15" />
+    <arg name = "fps"   value="15" />
     <include file="$(find jetson_csi_cam)/jetson_csi_cam.launch" pass_all_args="true" />
 
 
   <param name="robot_description" command="$(find xacro)/xacro $(find docking_control)/urdf/boat.urdf"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom" args="0 0 0 0 0 0 map odom" />
-
-<node pkg="tf2_ros" type="static_transform_publisher" name="dock_broadcaster" args="0 0 0 0 -1.5708 -1.5708 ar_marker_2 dock_frame" />
-
+    <include file="$(find imu_bno055)/launch/imu.launch" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="dock_broadcaster" args="0 0 0 0 -1.5708 -1.5708 ar_marker_6 dock_frame" />
+    <node name="ar_map_pub" pkg="docking_control" type="ar_map_pub.py" output="screen" />
   <node name="ar_track_alvar" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg bundle_files)" />
 </launch>

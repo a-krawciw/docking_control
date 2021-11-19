@@ -25,8 +25,6 @@ class RouteFinder:
     def __init__(self, tf2_buffer=None):
         self.boat_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.handle_boat_pos)
         self.tag_pose_sub = rospy.Subscriber("ar_pose_marker", AlvarMarkers, self.handle_new_marker)
-        self.path_sub = rospy.Subscriber("/path", Path, self.set_path)
-        self.path_pub = rospy.Publisher("path_request", PoseStamped, queue_size=10)
         self.tag_pub = rospy.Publisher("ar_tag_0", PoseStamped, queue_size=10)
         self.target = PoseStamped()
         self.error = PoseStamped()
@@ -55,8 +53,6 @@ class RouteFinder:
             current.header.frame_id = 'cg_ned'
             try:
                 self.error = self.tfBuffer.transform(current, 'dock_frame')
-                if not self._should_process():
-                    self.path_pub.publish(self.error)
                 self._most_recent_time = rospy.Time.now()
             except:
                 rospy.loginfo("Time out or disconnected tree")
@@ -67,34 +63,31 @@ class RouteFinder:
     def handle_boat_pos(self, msg):
         self.current_position = msg.pose
 
-    def set_path(self, p):
-        self.path = p
-
-    def get_current_target(self):
-        for waypoint in self.path.poses:
-            yield waypoint
 
     def extract_yaw(self, q):
         return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[2]
 
 
     def calc_steering_throttle(self):
-        if False and self._should_process():
+        if self._should_process():
 
             position = self.error.pose.position
-            target_angle = self.extract_yaw(self.target_state.pose.orientation)
+            dist = math.sqrt(position.x**2+position.y**2)
+            if dist < 0.3:
+                target_angle = math.atan2(position.y, position.x+.25)
+            else:
+                target_angle = math.atan2(position.y, position.x-.25)
+
             throttle = 1500
             if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
                 stage = 2
                 # return 1500, 1750
-            throttle = 1500 + 50 * (position.x)
+            throttle = 1500 + 100 * dist
 
             angle = self.extract_yaw(self.error.pose.orientation)
             angle_err = -target_angle + angle
 
-            if abs(angle_err) < 0.2:
-                self.target_state = self.get_current_target()
             rospy.loginfo("x:{} y{} target: {} value:{}".format(position.x, position.y, target_angle, angle))
             if throttle < 1500:
                 steering = 1500 + int(350 * angle_err)

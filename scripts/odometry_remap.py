@@ -2,6 +2,7 @@
 import rospy
 import tf2_ros
 import tf.transformations
+import tf2_geometry_msgs
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PoseStamped, PoseWithCovariance, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
@@ -25,8 +26,9 @@ class Remapper:
             try:
                 self.error = self.tfBuffer.transform(current, 'dock_frame')
                 cov_pos = PoseWithCovarianceStamped()
-                cov_pos.pose.pose = self.error
-                conf = 0.000001
+                cov_pos.pose.pose = self.error.pose
+                cov_pos.header = self.error.header
+                conf = 1e-4
                 cov_pos.pose.covariance[0] = conf
                 cov_pos.pose.covariance[7] = conf
                 cov_pos.pose.covariance[14] = conf
@@ -34,7 +36,8 @@ class Remapper:
                 cov_pos.pose.covariance[28] = conf
                 cov_pos.pose.covariance[35] = conf
                 self.tag_pub.publish(cov_pos)
-            except:
+            except Exception as e:
+                print e
                 rospy.loginfo("Time out or disconnected tree")
 
 

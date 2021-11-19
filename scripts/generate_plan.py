@@ -20,11 +20,14 @@ class PublisherClass:
 
     def __init__(self, publish_path, class_type):
         self._pub = rospy.Publisher(publish_path, class_type, queue_size=10)
+        self._class_type = class_type
 
     def publish(self):
         new_value = self.publish_value()
-        if isinstance(new_value, self._pub.data_class):
+        if isinstance(new_value, self._class_type):
             self._pub.publish(new_value)
+        else:
+            rospy.logwarn("Path was implemented incorrectly")
 
     def publish_value(self): raise NotImplementedError("Must specify what to publish")
 
@@ -80,8 +83,10 @@ class GradientPath(PathGenerator, PublisherClass):
         PathGenerator.__init__(self)
         PublisherClass.__init__(self, pub_string, Path)
         self.path = Path()
-        self.publish_value = lambda:self.path
         self.a = a
+
+    def publish_value(self):
+        return self.path
 
     def gradient(self, x, y):
         return -2*np.array([x, (1+self.a)*y])

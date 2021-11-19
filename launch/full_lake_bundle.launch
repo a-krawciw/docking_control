@@ -3,7 +3,7 @@
         <arg name="gcs_url" value="udp://:14551@10.0.60.61:14550" />
     </include>
     <include file="$(find docking_control)/launch/pool_ar.launch" pass_all_args="true" >
-        <arg name="bundle_files" value="$(find docking_control)/launch/dock_bundle.xml" />
+        <!--<arg name="bundle_files" value="$(find docking_control)/launch/dock_bundle.xml" />-->
     </include>
     <node pkg="docking_control" name="path_generation" type="generate_plan.py" />
 </launch>
