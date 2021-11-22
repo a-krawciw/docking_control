@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import math
+import threading
+
 import numpy as np
 
 import rospy
@@ -11,7 +13,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, Pose
 from ar_track_alvar_msgs.msg import AlvarMarkers
 
-from mavros_utils import RCManager
+from mavros_utils import RCManager, BoatConfig
 
 import contoller_utils as utils
 
@@ -20,7 +22,6 @@ def rc_callback(msg):
     if msg.channels[6] < 1200:
         global ros_mode
         ros_mode = False
-
 
 
 class RouteFinder:
@@ -33,7 +34,7 @@ class RouteFinder:
         self.target = PoseStamped()
         self.error = PoseStamped()
         self.path = Path()
-        self.target_state = PoseStamped()
+        self.path_lock = threading.Lock()
         self.target.header.frame_id = 'map'
         self.current_position = Pose()
         self._most_recent_time = rospy.Time.now() - rospy.Duration(11)
@@ -45,19 +46,20 @@ class RouteFinder:
             self.tfBuffer = tf2_buffer
 
     def handle_new_marker(self, msg):
-
         for marker in msg.markers:
             self.target = marker.pose
             self.target.header = marker.header
             self.target.header.frame_id = self.target.header.frame_id.replace("/", "")
 
             current = PoseStamped()
-            current.pose.orientation.z = 1
+            current.pose.orientation.w = 1
             current.header.frame_id = 'cg_ned'
             try:
                 self.error = self.tfBuffer.transform(current, 'dock_frame')
-                if not self._should_process() or rospy.Time.now() - self.path.header.stamp > rospy.Duration(10) :
+                if len(self.path.poses) < 1 and rospy.Time.now() - self._most_recent_time > rospy.Duration(10):
                     self.path_pub.publish(self.error)
+                    rospy.loginfo("Requesting new path")
+                    self.path.header.stamp = rospy.Time.now()
                 self._most_recent_time = rospy.Time.now()
             except:
                 rospy.loginfo("Time out or disconnected tree")
@@ -71,43 +73,41 @@ class RouteFinder:
     def set_path(self, p):
         self.path = p
 
-    def calc_steering_throttle(self):
+    def calc_force_torque(self):
         if self._should_process():
 
             position = self.error.pose.position
             try:
                 (dist, idx) = utils.min_dist(self.path, self.error)
-            except ValueError:
-                return 1550, 1500
-            target_angle = utils.extract_yaw(self.target_state.pose.orientation)
+            except (ValueError, IndexError):
+                return 0, 0
+            target_angle = utils.extract_yaw(self.path.poses[idx].pose.orientation)
             path_pos = self.path.poses[idx].pose
             path_pos = np.array([path_pos.position.x, path_pos.position.y, target_angle])
             current_theta = utils.extract_yaw(self.error.pose.orientation)
+            rospy.loginfo("target {}".format(path_pos))
+            look_ahead_point = np.array(path_pos[0:2] + 0.05 * np.array([np.cos(target_angle), np.sin(target_angle)]))
+            rospy.loginfo("Lookahead point {}".format(look_ahead_point))
 
-            look_ahead_point = np.array(path_pos[0:2] + 0.05*np.array([np.cos(target_angle),np.sin(target_angle)]))
+            restoring_angle = np.arctan2(look_ahead_point[1] - position.y, look_ahead_point[0] - position.x)
 
-            restoring_angle = np.arctan2(look_ahead_point[1]-position.y, look_ahead_point[0]-position.x)
+            angle_err = 5 * utils.theta_diff(current_theta, target_angle) + \
+                        2 * utils.theta_diff(current_theta, restoring_angle)
 
-            angle_err = utils.theta_diff(current_theta, target_angle) +\
-                        5*utils.theta_diff(current_theta, restoring_angle)
-
-            T = 3*angle_err/np.pi*0.75*0.165
+            T = 0.4 * angle_err / np.pi * 0.75 * 0.165
+            F = 0.75/(1-dist)*0.75
             F = 0.1
-            #F = 0.75/(1-dist)*0.75
 
             if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
-                return 1500, 1750
-            throttle = 1500 + 400/1.5*F
-            rospy.loginfo("x:{} y{} target: {} T:{}".format(position.x, position.y, angle_err, T))
-            if throttle < 1500:
-                steering = 1500 + int(350 * T)
-            else:
-                steering = 1500 - int(350 * T)
-            return steering, throttle
+                return 0.75, 0
+
+            rospy.loginfo("x:{} y{} target: {} current:{}".format(position.x, position.y, np.rad2deg(restoring_angle),
+                                                                  np.rad2deg(current_theta)))
+            return F, T
 
         else:
-            return 1550, 1500
+            return 0, 0
 
 
 def main():
@@ -117,10 +117,12 @@ def main():
     tf_listener = tf2_ros.TransformListener(tfBuffer)
     boat = RouteFinder(tfBuffer)
     rc_controller = RCManager()
+    rc_controller.set_raw_override()
+    boat_config = BoatConfig(0.165, -0.0123/4, -80)
 
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
-        rc_controller.setSteerThrottle(*boat.calc_steering_throttle())
+        rc_controller.setForceTorque(*boat.calc_force_torque(), boat_config=boat_config)
         rate.sleep()
 
 

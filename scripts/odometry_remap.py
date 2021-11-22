@@ -17,6 +17,7 @@ class Remapper:
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
 
 
+
     def handle_new_marker(self, msg):
         for marker in msg.markers:
 
@@ -28,13 +29,13 @@ class Remapper:
                 cov_pos = PoseWithCovarianceStamped()
                 cov_pos.pose.pose = self.error.pose
                 cov_pos.header = self.error.header
-                conf = 1e-4
+                conf = 1e-2
                 cov_pos.pose.covariance[0] = conf
                 cov_pos.pose.covariance[7] = conf
                 cov_pos.pose.covariance[14] = conf
-                cov_pos.pose.covariance[21] = conf
-                cov_pos.pose.covariance[28] = conf
-                cov_pos.pose.covariance[35] = conf
+                cov_pos.pose.covariance[21] = 100*conf
+                cov_pos.pose.covariance[28] = 100*conf
+                cov_pos.pose.covariance[35] = 100*conf
                 self.tag_pub.publish(cov_pos)
             except Exception as e:
                 print e

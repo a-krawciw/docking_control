@@ -13,11 +13,20 @@ def min_dist(path, pose):
     return np.nanmin(path_dist), \
            np.argmin(path_dist)
 
+def extract_roll(q):
+    return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[0]
+
+def extract_pitch(q):
+    return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[1]
 
 def extract_yaw(q):
     return tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[2]
 
 def theta_diff(t1, t2):
-    t1 = np.unwrap([t1])
-    t2 = np.unwrap([t2])
-    return np.unwrap(t1 - t2)
+    t1 = unwrap2Pi(t1)
+    t2 = unwrap2Pi(t2)
+    return t1 - t2
+
+def unwrap2Pi(v):
+    v = np.unwrap([v])
+    return v if v > 0 else v + 2*np.pi

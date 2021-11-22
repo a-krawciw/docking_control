@@ -94,18 +94,22 @@ class GradientPath(PathGenerator, PublisherClass):
     def generate_path_now(self, current_pose, target_pose):
         self.path = Path()
         self.path.header.frame_id = "dock_frame"
+        self.path.header.stamp = rospy.Time.now()
         position = current_pose.pose.position
         while position.x > 0.05:
             next_loc = PoseStamped()
             next_loc.header.frame_id = "dock_frame"
 
             gradient = self.gradient(position.x, position.y)
-            rospy.loginfo("{}:{}".format(gradient,np.linalg.norm(gradient)))
             gradient /= 10*np.linalg.norm(gradient)
             position.x += gradient[0]
             position.y += gradient[1]
+            if abs(position.y) < 0.005:
+                position.y = 0
 
             theta = math.atan2(gradient[1], gradient[0])
+
+            rospy.loginfo("{}:{}, {}".format(gradient,np.linalg.norm(gradient), theta))
 
             next_loc.pose.position.x = position.x
             next_loc.pose.position.y = position.y
@@ -119,19 +123,19 @@ def main():
     generator = GradientPath("/path")
     def swap_generator(msg):
         generator.generate_path_now(msg, PoseStamped())
+        generator.publish()
     sub = rospy.Subscriber("path_request", PoseStamped, swap_generator)
 
     generator.a = 8
     current = PoseStamped()
     current.pose.position.x = 2.0
     current.pose.position.y = 2.0
-    generator.generate_path_now(current, PoseStamped())
+    #generator.generate_path_now(current, PoseStamped())
     generator.publish()
 
     rate = rospy.Rate(5)
 
     while not rospy.is_shutdown():
-        generator.publish()
         rate.sleep()
 
 

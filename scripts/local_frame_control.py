@@ -74,7 +74,7 @@ class RouteFinder:
             position = self.error.pose.position
             dist = math.sqrt(position.x**2+position.y**2)
             if dist < 0.3:
-                target_angle = math.atan2(position.y, position.x+.25)
+                target_angle = math.atan2(position.y, position.x+.45)
             else:
                 target_angle = math.atan2(position.y, position.x-.25)
 

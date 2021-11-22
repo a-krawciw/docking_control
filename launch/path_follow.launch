@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="docking_control" name="path_generation" type="generate_plan.py" output="screen" />
+
+      <node pkg="docking_control" type="follow_path.py" name="follow_path" output="screen"/>
+
+
+</launch>
