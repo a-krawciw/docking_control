@@ -9,6 +9,7 @@ import tf.transformations
 import tf2_ros
 import tf2_geometry_msgs
 from nav_msgs.msg import Path
+from sensor_msgs.msg import Imu
 
 from geometry_msgs.msg import PoseStamped, Pose
 from ar_track_alvar_msgs.msg import AlvarMarkers
@@ -30,10 +31,12 @@ class RouteFinder:
         self.boat_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.handle_boat_pos)
         self.tag_pose_sub = rospy.Subscriber("ar_pose_marker", AlvarMarkers, self.handle_new_marker)
         self.path_sub = rospy.Subscriber("/path", Path, self.set_path)
+        self.imu_sub = rospy.Subscriber("/imu/data", Imu, self.update_imu)
         self.path_pub = rospy.Publisher("path_request", PoseStamped, queue_size=10)
         self.target = PoseStamped()
         self.error = PoseStamped()
         self.path = Path()
+        self.imu_val = Imu()
         self.path_lock = threading.Lock()
         self.target.header.frame_id = 'map'
         self.current_position = Pose()
@@ -55,7 +58,7 @@ class RouteFinder:
             current.pose.orientation.w = 1
             current.header.frame_id = 'cg_ned'
             try:
-                self.error = self.tfBuffer.transform(current, 'dock_frame')
+                self.error = self.tfBuffer.transform(current, 'map')
                 if len(self.path.poses) < 1 and rospy.Time.now() - self._most_recent_time > rospy.Duration(10):
                     self.path_pub.publish(self.error)
                     rospy.loginfo("Requesting new path")
@@ -71,32 +74,41 @@ class RouteFinder:
         self.current_position = msg.pose
 
     def set_path(self, p):
-        self.path = p
+        with self.path_lock:
+            print "In lock"
+            self.path = p
+
+    def update_imu(self, imu_msg):
+        self.imu_val = imu_msg
 
     def calc_force_torque(self):
         if self._should_process():
-
             position = self.error.pose.position
             try:
                 (dist, idx) = utils.min_dist(self.path, self.error)
+                idx += 3 if len(self.path.poses) - idx > 3 else 0
+
             except (ValueError, IndexError):
                 return 0, 0
             target_angle = utils.extract_yaw(self.path.poses[idx].pose.orientation)
             path_pos = self.path.poses[idx].pose
             path_pos = np.array([path_pos.position.x, path_pos.position.y, target_angle])
+            curvature = utils.approximate_curvature(self.path, self.error)[idx]
             current_theta = utils.extract_yaw(self.error.pose.orientation)
             rospy.loginfo("target {}".format(path_pos))
-            look_ahead_point = np.array(path_pos[0:2] + 0.05 * np.array([np.cos(target_angle), np.sin(target_angle)]))
+            look_ahead_point = np.array(path_pos[0:2] + 0.1 * np.array([np.cos(target_angle), np.sin(target_angle)]))
             rospy.loginfo("Lookahead point {}".format(look_ahead_point))
 
             restoring_angle = np.arctan2(look_ahead_point[1] - position.y, look_ahead_point[0] - position.x)
 
             angle_err = 5 * utils.theta_diff(current_theta, target_angle) + \
-                        2 * utils.theta_diff(current_theta, restoring_angle)
+                        2 * utils.theta_diff(current_theta, restoring_angle) + \
+                        0.1 * (curvature - self.imu_val.angular_velocity.z)
+
 
             T = 0.4 * angle_err / np.pi * 0.75 * 0.165
-            F = 0.75/(1-dist)*0.75
-            F = 0.1
+            F = 0.1/(2-dist)*0.75
+            #F = 0.1
 
             if position.x < 0.05 and abs(position.y) < 0.1:
                 rospy.loginfo("Docked")
@@ -104,6 +116,7 @@ class RouteFinder:
 
             rospy.loginfo("x:{} y{} target: {} current:{}".format(position.x, position.y, np.rad2deg(restoring_angle),
                                                                   np.rad2deg(current_theta)))
+
             return F, T
 
         else:

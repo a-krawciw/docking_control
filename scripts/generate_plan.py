@@ -93,7 +93,7 @@ class GradientPath(PathGenerator, PublisherClass):
 
     def generate_path_now(self, current_pose, target_pose):
         self.path = Path()
-        self.path.header.frame_id = "dock_frame"
+        self.path.header.frame_id = "map"
         self.path.header.stamp = rospy.Time.now()
         position = current_pose.pose.position
         while position.x > 0.05:
