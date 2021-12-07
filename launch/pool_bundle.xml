@@ -31,98 +31,97 @@ Units in cm
 
 
      <marker index="28" status="2">
-        <corner x="-273" y="14.0" z="16.0" />
-        <corner x="-273" y="14.0" z="8.0" />
-        <corner x="-273" y="22.0" z="8.0" />
-        <corner x="-273" y="22.0" z="16.0" />
+        <corner x="-273" y="14.0" z="6.0" />
+        <corner x="-273" y="14.0" z="-2.0" />
+        <corner x="-273" y="22.0" z="-2.0" />
+        <corner x="-273" y="22.0" z="6.0" />
     </marker>
 
 
-     <marker index="20" status="2">
-        <corner x="-273" y="14.0" z="107.0" />
-        <corner x="-273" y="14.0" z="99.0" />
-        <corner x="-273" y="22.0" z="99.0" />
-        <corner x="-273" y="22.0" z="107.0" />
+     <marker index="26" status="2">
+        <corner x="-273" y="14.0" z="97.0" />
+        <corner x="-273" y="14.0" z="89.0" />
+        <corner x="-273" y="22.0" z="89.0" />
+        <corner x="-273" y="22.0" z="97.0" />
     </marker>
 
 
      <marker index="15" status="2">
-        <corner x="224" y="14.0" z="5.0" />
-        <corner x="224" y="14.0" z="13.0" />
-        <corner x="224" y="22.0" z="13.0" />
-        <corner x="224" y="22.0" z="5.0" />
+        <corner x="224" y="14.0" z="-4.0" />
+        <corner x="224" y="14.0" z="4.0" />
+        <corner x="224" y="22.0" z="4.0" />
+        <corner x="224" y="22.0" z="-4.0" />
     </marker>
 
 
      <marker index="5" status="2">
-        <corner x="224" y="14.0" z="108.0" />
-        <corner x="224" y="14.0" z="116.0" />
-        <corner x="224" y="22.0" z="116.0" />
-        <corner x="224" y="22.0" z="108.0" />
+        <corner x="224" y="14.0" z="99.0" />
+        <corner x="224" y="14.0" z="107.0" />
+        <corner x="224" y="22.0" z="107.0" />
+        <corner x="224" y="22.0" z="99.0" />
     </marker>
 
 
      <marker index="8" status="2">
-        <corner x="-176.0" y="14.0" z="-41.0" />
-        <corner x="-168.0" y="14.0" z="-41.0" />
-        <corner x="-168.0" y="22.0" z="-41.0" />
-        <corner x="-176.0" y="22.0" z="-41.0" />
+        <corner x="-176.0" y="14.0" z="-50.0" />
+        <corner x="-168.0" y="14.0" z="-50.0" />
+        <corner x="-168.0" y="22.0" z="-50.0" />
+        <corner x="-176.0" y="22.0" z="-50.0" />
     </marker>
 
 
      <marker index="3" status="2">
-        <corner x="-126.0" y="14.0" z="-41.0" />
-        <corner x="-118.0" y="14.0" z="-41.0" />
-        <corner x="-118.0" y="22.0" z="-41.0" />
-        <corner x="-126.0" y="22.0" z="-41.0" />
+        <corner x="-126.0" y="14.0" z="-50.0" />
+        <corner x="-118.0" y="14.0" z="-50.0" />
+        <corner x="-118.0" y="22.0" z="-50.0" />
+        <corner x="-126.0" y="22.0" z="-50.0" />
     </marker>
 
 
      <marker index="7" status="2">
-        <corner x="-76.0" y="14.0" z="-41.0" />
-        <corner x="-68.0" y="14.0" z="-41.0" />
-        <corner x="-68.0" y="22.0" z="-41.0" />
-        <corner x="-76.0" y="22.0" z="-41.0" />
+        <corner x="-76.0" y="14.0" z="-50.0" />
+        <corner x="-68.0" y="14.0" z="-50.0" />
+        <corner x="-68.0" y="22.0" z="-50.0" />
+        <corner x="-76.0" y="22.0" z="-50.0" />
     </marker>
 
 
      <marker index="17" status="2">
-        <corner x="68.0" y="14.0" z="-41.0" />
-        <corner x="76.0" y="14.0" z="-41.0" />
-        <corner x="76.0" y="22.0" z="-41.0" />
-        <corner x="68.0" y="22.0" z="-41.0" />
+        <corner x="68.0" y="14.0" z="-50.0" />
+        <corner x="76.0" y="14.0" z="-50.0" />
+        <corner x="76.0" y="22.0" z="-50.0" />
+        <corner x="68.0" y="22.0" z="-50.0" />
     </marker>
 
 
      <marker index="9" status="2">
-        <corner x="118.0" y="14.0" z="-41.0" />
-        <corner x="126.0" y="14.0" z="-41.0" />
-        <corner x="126.0" y="22.0" z="-41.0" />
-        <corner x="118.0" y="22.0" z="-41.0" />
+        <corner x="118.0" y="14.0" z="-50.0" />
+        <corner x="126.0" y="14.0" z="-50.0" />
+        <corner x="126.0" y="22.0" z="-50.0" />
+        <corner x="118.0" y="22.0" z="-50.0" />
     </marker>
 
 
-     <marker index="14" status="2">
-        <corner x="-166.0" y="14.0" z="208" />
-        <corner x="-174.0" y="14.0" z="208" />
-        <corner x="-174.0" y="22.0" z="208" />
-        <corner x="-166.0" y="22.0" z="208" />
+     <marker index="24" status="2">
+        <corner x="-166.0" y="14.0" z="204" />
+        <corner x="-174.0" y="14.0" z="204" />
+        <corner x="-174.0" y="22.0" z="204" />
+        <corner x="-166.0" y="22.0" z="204" />
     </marker>
 
 
      <marker index="12" status="2">
-        <corner x="-11.0" y="14.0" z="208" />
-        <corner x="-19.0" y="14.0" z="208" />
-        <corner x="-19.0" y="22.0" z="208" />
-        <corner x="-11.0" y="22.0" z="208" />
+        <corner x="-11.0" y="14.0" z="204" />
+        <corner x="-19.0" y="14.0" z="204" />
+        <corner x="-19.0" y="22.0" z="204" />
+        <corner x="-11.0" y="22.0" z="204" />
     </marker>
 
 
      <marker index="13" status="2">
-        <corner x="115.0" y="14.0" z="208" />
-        <corner x="107.0" y="14.0" z="208" />
-        <corner x="107.0" y="22.0" z="208" />
-        <corner x="115.0" y="22.0" z="208" />
+        <corner x="115.0" y="14.0" z="204" />
+        <corner x="107.0" y="14.0" z="204" />
+        <corner x="107.0" y="22.0" z="204" />
+        <corner x="115.0" y="22.0" z="204" />
     </marker>
-
 </multimarker>

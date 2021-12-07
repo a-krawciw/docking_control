@@ -104,11 +104,11 @@ class GradientPath(PathGenerator, PublisherClass):
             gradient /= 10*np.linalg.norm(gradient)
             position.x += gradient[0]
             position.y += gradient[1]
-            if abs(position.y) < 0.005:
+            if abs(position.y) < 0.01:
                 position.y = 0
-
-            theta = math.atan2(gradient[1], gradient[0])
-
+                theta = np.pi
+            else:
+                theta = math.atan2(gradient[1], gradient[0])
             rospy.loginfo("{}:{}, {}".format(gradient,np.linalg.norm(gradient), theta))
 
             next_loc.pose.position.x = position.x
@@ -126,7 +126,7 @@ def main():
         generator.publish()
     sub = rospy.Subscriber("path_request", PoseStamped, swap_generator)
 
-    generator.a = 8
+    generator.a = 5
     current = PoseStamped()
     current.pose.position.x = 2.0
     current.pose.position.y = 2.0

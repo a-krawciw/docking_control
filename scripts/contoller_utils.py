@@ -15,6 +15,7 @@ def min_dist(path, pose):
     return np.nanmin(path_dist), \
            np.argmin(path_dist)
 
+
 def approximate_curvature(path, pose):
     if not path.header.frame_id == pose.header.frame_id:
         raise ValueError("path and pose must be in the same frame frames are {} and {}".format(path.header.frame_id,
@@ -27,8 +28,11 @@ def approximate_curvature(path, pose):
     dy = np.gradient(y)
     dtheta = np.gradient(theta)
 
-    return 2*np.sin(abs(dtheta/2))/np.sqrt(dx**2 + dy**2)
+    return 2 * np.sin(abs(dtheta / 2)) / np.sqrt(dx ** 2 + dy ** 2)
 
+
+def median_filter(x, f):
+    return sorted(x, key=f)[len(x) // 2]
 
 
 def extract_roll(q):
@@ -52,3 +56,7 @@ def theta_diff(t1, t2):
 def unwrap2Pi(v):
     v = np.unwrap([v])
     return v if v > 0 else v + 2 * np.pi
+
+
+def vect_norm(v):
+    return np.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2)

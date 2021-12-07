@@ -95,9 +95,9 @@ class RouteFinder:
             path_pos = np.array([path_pos.position.x, path_pos.position.y, target_angle])
             curvature = utils.approximate_curvature(self.path, self.error)[idx]
             current_theta = utils.extract_yaw(self.error.pose.orientation)
-            rospy.loginfo("target {}".format(path_pos))
+            rospy.loginfo("current {}".format([position.x, position.y, position.z]))
             look_ahead_point = np.array(path_pos[0:2] + 0.1 * np.array([np.cos(target_angle), np.sin(target_angle)]))
-            rospy.loginfo("Lookahead point {}".format(look_ahead_point))
+            #rospy.loginfo("Lookahead point {}".format(look_ahead_point))
 
             restoring_angle = np.arctan2(look_ahead_point[1] - position.y, look_ahead_point[0] - position.x)
 
@@ -106,7 +106,7 @@ class RouteFinder:
                         0.1 * (curvature - self.imu_val.angular_velocity.z)
 
 
-            T = 0.4 * angle_err / np.pi * 0.75 * 0.165
+            T = 0.3 * angle_err / np.pi * 0.75 * 0.165
             F = 0.1/(2-dist)*0.75
             #F = 0.1
 
